@@ -30,7 +30,9 @@ class Bottleneck(nn.Module):
         identity = x
         out = self.bottleneck(x)
         identity = self.downsample(x)
-        # 将identity(恒等映射)与网络堆叠层输出相加，并经过ReLU后输出
+        ########################################################
+        # 将identity(恒等映射)与网络堆叠层输出相加，并经过ReLU后输出 #
+        ########################################################
         out = out + identity
         out = self.relu(out)
         return out
