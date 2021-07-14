@@ -1,0 +1,26 @@
+<annotation>
+	<folder>JPEGImages</folder>
+	<filename>img_79.jpg</filename>
+	<path>C:\Users\Posedion\Desktop\毕业设计\label_thin\label_thin\VOCdevkit\VOC2012\JPEGImages\img_79.jpg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>500</width>
+		<height>500</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>other_waste</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>11</xmin>
+			<ymin>2</ymin>
+			<xmax>438</xmax>
+			<ymax>497</ymax>
+		</bndbox>
+	</object>
+</annotation>

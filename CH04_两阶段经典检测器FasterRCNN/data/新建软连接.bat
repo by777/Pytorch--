@@ -1,0 +1,1 @@
+mklink /j data F:\U盘\VOCdevkit\VOC2012
