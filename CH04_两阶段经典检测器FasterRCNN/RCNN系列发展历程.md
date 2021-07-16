@@ -1,6 +1,6 @@
-> # RCNN（Regions with CNN Features）
+> RCNN（Regions with CNN Features）
 
-# 开山之作：RCNN
+# 开山之作：RCNN3
 
 + 发表于：CVPR 2014
 + 检测率（PASCAL VOC）:从35.1% 提升到了 53.7%

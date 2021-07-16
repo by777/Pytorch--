@@ -14,6 +14,6 @@ def forward(self, im_data, im_info, gt_boxes, num_boxes):
     base_feat = self.RCNN_base(im_data)
     # 将feature map送入RPN得到Proposal与分类与回归Loss
     rois, rpn_loss_cls, rpn_loss_bbox = self.RCNN_rpn(base_feat, im_info, gt_boxes, num_boxes)
-    ...S
+    ...
 ```
 
