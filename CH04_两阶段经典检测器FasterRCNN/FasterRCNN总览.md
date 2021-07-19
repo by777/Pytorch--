@@ -47,4 +47,24 @@ def forward(self, im_data, im_info, gt_boxes, num_boxes):
 
 # 理解Anchor
 
-Anchor的本质是在原图大小上的一系列的矩形框，但Faster RCNN将这一系列的矩形框与feature map进行了关联。具体做法是，
+Anchor的本质是在原图大小上的一系列的矩形框，但Faster RCNN将这一系列的矩形框与feature map进行了关联。具体做法是，首先对feature map进行3 x 3卷积，得到每一个点的维度是512维，这512维的数据对应原始图像上的很多不同的大小与宽高区域的特征，这些区域的中心点都相同。如果下采样率维默认的16，则每一个点的而坐标乘以16即可得到对应的原始坐标。
+
+为了适应不同物体的宽高，在作者的论文中，默认每一个点上抽取了9种Anchors，具体Scale为{8，16，32}，Ratio为{0.5，1，2}，将9种Anchors的大小反算到原图上，即得到不同原始Proposal。由于feature map的大小为37 x 50，因此一共有37 x 50 x 9 = 16650个Anchors。而后通过分类网络与回归网络得到每一个Anchor的前景背景概率和偏移量，前景背景概率原来判断Anchor是前景的概率，回归网络则将预测偏移量作用到Anchor使得Anchor更接近真实物体坐标。
+
+![image-20210719103226550](https://raw.githubusercontent.com/by777/imgRep/main/img/20210719103226.png)
+
+```python
+def generate_anchors(base_size=16,ratios=[0.5,1,2],scales=2**np.arange(3,6)):
+    # 首先创建一个基本anchor为[0,0,15,15]
+    base_anchor = np.arange([1,1,base_size,base_size]) - 1
+    # 将基本anchor进行宽高变换，生成3种宽高比的s:Anchor
+    ratio_anchor = _ratio_enum(base_anchor,ratio)
+    # 将上述anchor尺度变换，得到最终9种Anchors
+    anchors = np.vstack([_scale_enum(ratio_anchors[i,:],scales) for i in xrange(ratio_anchors.shape[0])])
+    # 返回对应于feature map大小的anchors
+    return anchors
+```
+
+# RPN的真值与预测值
+
+对于物体检测任务来说，模型需要预测物体的类别与出现的位置。即类别、中心点坐标x和y、w和h，5个量。由于有了anchor先验框，RPN可以预测Anchor的类别作为预测边框的类别，并且可以预测真实的边框相对于anchor的偏移量，而不是直接预测边框的中心点坐标和宽高（x,y,w,h）。
