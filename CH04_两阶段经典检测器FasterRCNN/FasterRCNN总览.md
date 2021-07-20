@@ -68,3 +68,28 @@ def generate_anchors(base_size=16,ratios=[0.5,1,2],scales=2**np.arange(3,6)):
 # RPN的真值与预测值
 
 对于物体检测任务来说，模型需要预测物体的类别与出现的位置。即类别、中心点坐标x和y、w和h，5个量。由于有了anchor先验框，RPN可以预测Anchor的类别作为预测边框的类别，并且可以预测真实的边框相对于anchor的偏移量，而不是直接预测边框的中心点坐标和宽高（x,y,w,h）。
+
+举个例子，输入图像中有3个Anchors与两个标签，从位置来看，Anchor A，C分别于标签M、N有一定的重叠，而Anchor B的位置更像是背景。
+
+![image-20210720095156308](https://raw.githubusercontent.com/by777/imgRep/main/img/20210720095156.png)
+
++ 首先介绍模型的真值。
+
+  对于类别的真值，由于RPN只负责区域生成，保证Recall，而没必要细分每一个区域属于哪一个类别，因此只需要前景与背景两个类别，前景即有物体，背景则没有物体。
+
+  RPN通过计算Anchor与标签的IoU来判断Anchor是属于前景还是背景，**当IoU大于一定值时，该Anchor的真值为前景**，低于一定值时，该Anchor的真值为背景。
+
++ 然后是偏移量的真值。
+
+  仍以上图的Anchor A与label M为例，假设Anchor A中心坐标为X_a与Y_a，宽和高为W_a和H_a，label M的中心坐标为x和y，宽高为w和h，则对应的偏移真值计算公式如下：
+  $$
+  t_x = (x - x_a) / w_a \\
+  
+  t_y = (y - y_a) / h_a \\
+  
+  t_w = log(\frac{w}{w_a}) \\
+  
+  t_h = log(\frac{h}{h_a}) \\
+  $$
+从上式中可以看出，**位置偏移t_x与t_y利用宽高进行了归一化，而宽高偏移t_w和t_h进行了对数处理**，这样做的好处在于进一步限制了偏移量的范围，便于预测。
+
