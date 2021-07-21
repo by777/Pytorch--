@@ -13,7 +13,7 @@
 
 # RPN模块
 
-区域生成模块。其作用是生成较好的建议框，即Proposal，这里用到了强先验的Anchor。RPN包括了5个子模块：
+**区域生成模块。其作用是生成较好的建议框，即Proposal**，这里用到了强先验的Anchor。RPN包括了5个子模块：
 
 1. **Anchor生成**。RPN对**feature map上的每一个点都对应了9个Anchor**，这9个Anchor的大小宽高不同，对应到原图基本可以覆盖所有可能出现的物体。因此，有了数量庞大的Anchor，RPN的接下来任务就是从中筛选，并调整更好的位置，得到Proposal。
 2. **RPN网络**。与上面的Anchor对应，由于feature map上每个点都对应了9个anchor，因此可以利用1 x 1卷积再feature map上**得到每一个Anchor的预测得分与预测偏移值**。
@@ -73,23 +73,37 @@ def generate_anchors(base_size=16,ratios=[0.5,1,2],scales=2**np.arange(3,6)):
 
 ![image-20210720095156308](https://raw.githubusercontent.com/by777/imgRep/main/img/20210720095156.png)
 
-+ 首先介绍模型的真值。
++ 首先介绍**模型的真值**。
 
   对于类别的真值，由于RPN只负责区域生成，保证Recall，而没必要细分每一个区域属于哪一个类别，因此只需要前景与背景两个类别，前景即有物体，背景则没有物体。
 
   RPN通过计算Anchor与标签的IoU来判断Anchor是属于前景还是背景，**当IoU大于一定值时，该Anchor的真值为前景**，低于一定值时，该Anchor的真值为背景。
 
-+ 然后是偏移量的真值。
++ 然后是**偏移量的真值**。
 
   仍以上图的Anchor A与label M为例，假设Anchor A中心坐标为X_a与Y_a，宽和高为W_a和H_a，label M的中心坐标为x和y，宽高为w和h，则对应的偏移真值计算公式如下：
   $$
   t_x = (x - x_a) / w_a \\
-  
   t_y = (y - y_a) / h_a \\
-  
   t_w = log(\frac{w}{w_a}) \\
-  
   t_h = log(\frac{h}{h_a}) \\
   $$
-从上式中可以看出，**位置偏移t_x与t_y利用宽高进行了归一化，而宽高偏移t_w和t_h进行了对数处理**，这样做的好处在于进一步限制了偏移量的范围，便于预测。
+  从上式中可以看出，**位置偏移t_x与t_y利用宽高进行了归一化，而宽高偏移t_w和t_h进行了对数处理**，这样做的好处在于进一步限制了偏移量的范围，便于预测。
+
+有了上述的真值，为了求取损失，RPN通过CNN分别得到了类别与偏移量的预测值。具体来讲，RPN需要预测每一个Anchor属于前景后景概率，同时还需要预测真实物体相对于Anchor的偏移量，记为
+$$
+t_x^*、t_y^*、t_w^*、t_h^*
+$$
+另外，在得到预测偏移量后，可以使用下面的公式讲预测偏移量作用到对应的Anchor上，得到预测框的实际位置
+$$
+x^*、y^*、w^*、h^*
+$$
+
+$$ \begin{aligned}
+t_x^* = (x - x_a) / w_a  
+t_y^* = (y - y_a) / h_a  
+t_w^* = log(\frac{w}{w_a})  
+t_h^* = log(\frac{h}{h_a}) 
+\end{aligned}
+$$ 
 
